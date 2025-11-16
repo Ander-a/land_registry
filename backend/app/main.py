@@ -6,12 +6,16 @@ from pathlib import Path
 
 from .routes.auth_routes import router as auth_router
 from .routes.claims import router as claims_router
+from .routes.ai_routes import router as ai_router
+from .routes.validation import router as validation_router
 from .db import init_db, close_db
+from .ai.model_loader import load_models
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: initialize database connection
+    # Startup: initialize database connection and AI models
     await init_db()
+    load_models()
     yield
     # Shutdown: close database connection
     await close_db()
@@ -33,6 +37,8 @@ app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
 
 app.include_router(auth_router)
 app.include_router(claims_router)
+app.include_router(ai_router)
+app.include_router(validation_router)
 
 @app.get("/")
 def root():

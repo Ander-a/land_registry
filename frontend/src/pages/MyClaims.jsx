@@ -23,6 +23,15 @@ export default function MyClaims() {
     fetchClaims()
   }, [])
 
+  const getValidationStatusColor = (status) => {
+    switch (status) {
+      case 'pending': return 'orange'
+      case 'partially_validated': return '#FF9800'
+      case 'fully_validated': return 'green'
+      default: return '#666'
+    }
+  }
+
   if (loading) return <div>Loading claims...</div>
   if (error) return <div style={{ color: 'red' }}>Error: {error}</div>
 
@@ -58,9 +67,17 @@ export default function MyClaims() {
                   <div><strong>Status:</strong> <span style={{ 
                     color: claim.status === 'pending' ? 'orange' : claim.status === 'validated' ? 'green' : 'red'
                   }}>{claim.status}</span></div>
+                  <div><strong>Validation:</strong> <span style={{ 
+                    color: getValidationStatusColor(claim.validation_status),
+                    textTransform: 'capitalize'
+                  }}>{claim.validation_status.replace('_', ' ')}</span></div>
+                  <div><strong>Witnesses:</strong> {claim.witness_count}</div>
+                  <div><strong>Leader Endorsed:</strong> {claim.endorsed_by_leader ? '✓ Yes' : '✗ No'}</div>
                   <div><strong>Location:</strong> {claim.geolocation.latitude.toFixed(6)}, {claim.geolocation.longitude.toFixed(6)}</div>
-                  <div><strong>Boundary Points:</strong> {claim.boundary.coordinates[0].length}</div>
                   <div><strong>Submitted:</strong> {new Date(claim.created_at).toLocaleDateString()}</div>
+                  <Link to={`/claim/${claim.id}`}>
+                    <button style={{ marginTop: '8px', fontSize: '14px' }}>View Details</button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -70,3 +87,4 @@ export default function MyClaims() {
     </div>
   )
 }
+
