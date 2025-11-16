@@ -97,7 +97,15 @@ async def interactive_create_admin():
         print("❌ Password must be at least 8 characters!")
         return
     
+    if len(password.encode('utf-8')) > 72:
+        print("⚠️  Password is too long (bcrypt limit: 72 bytes)")
+        print("   Truncating to 72 characters...")
+        password = password[:72]
+    
     password_confirm = getpass("Confirm password: ")
+    if len(password_confirm.encode('utf-8')) > 72:
+        password_confirm = password_confirm[:72]
+        
     if password != password_confirm:
         print("❌ Passwords do not match!")
         return

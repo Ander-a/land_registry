@@ -73,4 +73,9 @@ if __name__ == "__main__":
         print("❌ Password must be at least 8 characters!")
         sys.exit(1)
     
+    # Truncate password if it exceeds bcrypt's 72 byte limit
+    if len(password.encode('utf-8')) > 72:
+        print("⚠️  Password truncated to 72 bytes (bcrypt limit)")
+        password = password[:72]
+    
     asyncio.run(create_admin(name, email, password))
