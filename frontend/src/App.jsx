@@ -1,8 +1,8 @@
 import React from 'react'
 import { Routes, Route, Link } from 'react-router-dom'
 import Home from './pages/Home'
-import Register from './pages/Register'
 import Login from './pages/Login'
+import SignUp from './pages/SignUp'
 import Dashboard from './pages/Dashboard'
 import SubmitClaim from './pages/SubmitClaim'
 import MyClaims from './pages/MyClaims'
@@ -19,7 +19,7 @@ export default function App() {
   return (
     <div className="container">
       <nav className="nav">
-        <Link to="/">Home</Link> | <Link to="/register">Register</Link> | <Link to="/login">Login</Link> | <Link to="/dashboard">Dashboard</Link>
+        <Link to="/">Home</Link> | <Link to="/signup">Request Access</Link> | <Link to="/login">Login</Link> | <Link to="/dashboard">Dashboard</Link>
         {isAuthenticated() && (
           <>
             {' | '}<Link to="/submit-claim">Submit Claim</Link>
@@ -33,7 +33,7 @@ export default function App() {
 
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/submit-claim" element={<ProtectedRoute><SubmitClaim /></ProtectedRoute>} />

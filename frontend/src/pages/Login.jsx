@@ -134,7 +134,7 @@ export default function Login(){
         <div className="login-footer">
           <p className="footer-text">
             Don't have an account?{' '}
-            <Link to="/register" className="footer-link">
+            <Link to="/signup" className="footer-link">
               Request Access
             </Link>
           </p>
