@@ -12,6 +12,7 @@ import WitnessClaim from './pages/WitnessClaim'
 import LeaderEndorsement from './pages/LeaderEndorsement'
 import ClaimDetail from './pages/ClaimDetail'
 import ClaimDetailsNew from './pages/ClaimDetailsNew'
+import ValidateClaim from './pages/ValidateClaim'
 import ProtectedRoute from './components/ProtectedRoute'
 import { useAuth } from './contexts/AuthContext'
 
@@ -29,6 +30,7 @@ export default function App() {
             {' | '}<Link to="/submit-claim-new">New Submit</Link>
             {' | '}<Link to="/my-claims">My Claims</Link>
             {' | '}<Link to="/claim-details-new">Claim Details</Link>
+            {' | '}<Link to="/validate-claim">Validate Claims</Link>
             {' | '}<Link to="/witness">Witness Claims</Link>
             {isLeader && <>{' | '}<Link to="/leader">Leader Panel</Link></>}
             <button onClick={logout} style={{ marginLeft: 8 }}>Logout</button>
@@ -49,6 +51,7 @@ export default function App() {
         <Route path="/leader" element={<ProtectedRoute><LeaderEndorsement /></ProtectedRoute>} />
         <Route path="/claim/:id" element={<ProtectedRoute><ClaimDetail /></ProtectedRoute>} />
         <Route path="/claim-details-new" element={<ProtectedRoute><ClaimDetailsNew /></ProtectedRoute>} />
+        <Route path="/validate-claim" element={<ProtectedRoute><ValidateClaim /></ProtectedRoute>} />
       </Routes>
     </div>
   )
