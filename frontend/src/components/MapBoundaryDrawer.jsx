@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react'
-import { MapContainer, TileLayer, FeatureGroup } from 'react-leaflet'
-import { EditControl } from 'react-leaflet-draw'
+import { MapContainer, TileLayer, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet-draw/dist/leaflet.draw.css'
 import L from 'leaflet'
@@ -13,49 +12,84 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 })
 
-export default function MapBoundaryDrawer({ onBoundaryChange, center = [-1.2921, 36.8219] }) {
-  const [drawnItems, setDrawnItems] = useState(null)
-  const featureGroupRef = useRef()
+function DrawControl({ onBoundaryChange }) {
+  const map = useMap()
+  const drawnItems = useRef(new L.FeatureGroup())
 
-  const onCreated = (e) => {
-    const { layer } = e
-    
-    // Clear previous drawings
-    if (featureGroupRef.current) {
-      featureGroupRef.current.clearLayers()
-    }
-    
-    // Add new layer
-    if (featureGroupRef.current) {
-      featureGroupRef.current.addLayer(layer)
-    }
-    
-    // Extract GeoJSON
-    const geoJSON = layer.toGeoJSON()
-    const boundary = {
-      type: 'Polygon',
-      coordinates: geoJSON.geometry.coordinates
-    }
-    
-    onBoundaryChange(boundary)
-  }
+  useEffect(() => {
+    if (!map) return
 
-  const onEdited = (e) => {
-    const { layers } = e
-    layers.eachLayer((layer) => {
+    map.addLayer(drawnItems.current)
+
+    const drawControl = new L.Control.Draw({
+      position: 'topright',
+      draw: {
+        rectangle: false,
+        circle: false,
+        circlemarker: false,
+        marker: false,
+        polyline: false,
+        polygon: {
+          allowIntersection: false,
+          showArea: true,
+          shapeOptions: {
+            color: '#3388ff'
+          }
+        }
+      },
+      edit: {
+        featureGroup: drawnItems.current,
+        remove: true
+      }
+    })
+
+    map.addControl(drawControl)
+
+    map.on(L.Draw.Event.CREATED, (e) => {
+      const { layer } = e
+      
+      // Clear previous drawings
+      drawnItems.current.clearLayers()
+      
+      // Add new layer
+      drawnItems.current.addLayer(layer)
+      
+      // Extract GeoJSON
       const geoJSON = layer.toGeoJSON()
       const boundary = {
         type: 'Polygon',
         coordinates: geoJSON.geometry.coordinates
       }
+      
       onBoundaryChange(boundary)
     })
-  }
 
-  const onDeleted = () => {
-    onBoundaryChange(null)
-  }
+    map.on(L.Draw.Event.EDITED, (e) => {
+      const { layers } = e
+      layers.eachLayer((layer) => {
+        const geoJSON = layer.toGeoJSON()
+        const boundary = {
+          type: 'Polygon',
+          coordinates: geoJSON.geometry.coordinates
+        }
+        onBoundaryChange(boundary)
+      })
+    })
 
+    map.on(L.Draw.Event.DELETED, () => {
+      onBoundaryChange(null)
+    })
+
+    return () => {
+      map.removeControl(drawControl)
+      map.removeLayer(drawnItems.current)
+    }
+  }, [map, onBoundaryChange])
+
+  return null
+}
+
+export default function MapBoundaryDrawer({ onBoundaryChange, center = [-1.2921, 36.8219] }) {
   return (
     <MapContainer
       center={center}
@@ -66,28 +100,7 @@ export default function MapBoundaryDrawer({ onBoundaryChange, center = [-1.2921,
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <FeatureGroup ref={featureGroupRef}>
-        <EditControl
-          position="topright"
-          onCreated={onCreated}
-          onEdited={onEdited}
-          onDeleted={onDeleted}
-          draw={{
-            rectangle: false,
-            circle: false,
-            circlemarker: false,
-            marker: false,
-            polyline: false,
-            polygon: {
-              allowIntersection: false,
-              showArea: true,
-              shapeOptions: {
-                color: '#3388ff'
-              }
-            }
-          }}
-        />
-      </FeatureGroup>
+      <DrawControl onBoundaryChange={onBoundaryChange} />
     </MapContainer>
   )
 }
