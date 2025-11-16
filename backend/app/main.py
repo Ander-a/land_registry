@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from .routes.auth_routes import router as auth_router
+from .routes.claims import router as claims_router
 from .db import init_db, close_db
 
 @asynccontextmanager
@@ -23,7 +26,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount uploads directory for static file serving
+uploads_dir = Path(__file__).parent.parent / "uploads"
+uploads_dir.mkdir(exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
+
 app.include_router(auth_router)
+app.include_router(claims_router)
 
 @app.get("/")
 def root():
