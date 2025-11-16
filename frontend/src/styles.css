@@ -1,0 +1,7 @@
+* { box-sizing: border-box; }
+body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; margin: 0; padding: 20px; }
+.container { max-width: 640px; margin: 0 auto; }
+.form { display:flex; flex-direction:column; gap:8px; }
+input, button { padding: 8px; font-size: 14px; }
+button { cursor: pointer; }
+.nav { margin-bottom: 16px; }
