@@ -5,11 +5,9 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from sqlmodel import Session, select
 
 from ..config import settings
 from ..models.user import User
-from ..db import get_session
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
@@ -31,7 +29,7 @@ class JWTBearer:
     def __init__(self, auto_error: bool = True):
         self.auto_error = auto_error
 
-    async def __call__(self, credentials: HTTPAuthorizationCredentials = Depends(security), session: Session = Depends(get_session)) -> User:
+    async def __call__(self, credentials: HTTPAuthorizationCredentials = Depends(security)) -> User:
         if credentials:
             token = credentials.credentials
             try:
@@ -42,7 +40,7 @@ class JWTBearer:
             except JWTError:
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
 
-            user = session.exec(select(User).where(User.email == email)).first()
+            user = await User.find_one(User.email == email)
             if not user:
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
             return user

@@ -12,11 +12,11 @@ class UserLogin(BaseModel):
     password: str
 
 class UserRead(BaseModel):
-    id: int
+    id: str  # MongoDB uses string IDs
     name: str
     email: EmailStr
     role: str
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
