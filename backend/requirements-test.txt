@@ -1,0 +1,49 @@
+# Testing Dependencies for Land Registry System
+# Install with: pip install -r requirements-test.txt
+
+# Core Testing Framework
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+
+# HTTP Testing
+httpx==0.25.2
+requests==2.31.0
+
+# Database Mocking
+mongomock==4.1.2
+motor==3.3.2
+
+# Code Coverage
+coverage[toml]==7.3.2
+
+# Test Data Generation
+Faker==20.1.0
+factory-boy==3.3.0
+
+# Image Testing
+Pillow==10.1.0
+
+# Mocking & Fixtures
+pytest-mock==3.12.0
+responses==0.24.1
+
+# Performance Testing
+pytest-benchmark==4.0.0
+
+# Test Reporting
+pytest-html==4.1.1
+pytest-json-report==1.5.0
+
+# Code Quality (optional but recommended)
+flake8==6.1.0
+black==23.12.1
+mypy==1.7.1
+pylint==3.0.3
+
+# Security Testing
+bandit==1.7.5
+safety==2.3.5
+
+# Load Testing (optional)
+locust==2.19.1

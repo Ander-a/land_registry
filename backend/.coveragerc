@@ -1,0 +1,59 @@
+# Coverage Configuration for Land Registry System
+
+[run]
+source = app
+omit = 
+    */tests/*
+    */venv/*
+    */.venv/*
+    */__pycache__/*
+    */site-packages/*
+    */migrations/*
+    */config.py
+    */conftest.py
+
+branch = True
+parallel = True
+
+[report]
+precision = 2
+show_missing = True
+skip_covered = False
+skip_empty = True
+
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+    
+    # Don't complain about missing debug-only code
+    def __repr__
+    def __str__
+    
+    # Don't complain if tests don't hit defensive assertion code
+    raise AssertionError
+    raise NotImplementedError
+    
+    # Don't complain if non-runnable code isn't run
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    
+    # Don't complain about abstract methods
+    @abstractmethod
+    @abc.abstractmethod
+    
+    # Don't complain about overloads
+    @overload
+    
+    # Don't complain about ellipsis in protocol definitions
+    \.\.\.
+
+[html]
+directory = htmlcov
+title = Land Registry System - Test Coverage Report
+
+[xml]
+output = coverage.xml
+
+[json]
+output = coverage.json
+pretty_print = True
