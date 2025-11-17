@@ -1,0 +1,174 @@
+/* FileUpload Component Styles */
+
+.file-upload-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.file-upload-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+/* Dropzone Styles */
+.dropzone {
+  border: 3px dashed #cbd5e0;
+  border-radius: 12px;
+  padding: 60px 40px;
+  text-align: center;
+  background-color: #f7fafc;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dropzone:hover {
+  border-color: #667eea;
+  background-color: #edf2f7;
+}
+
+.dropzone-active {
+  border-color: #667eea;
+  background-color: #e6f2ff;
+  transform: scale(1.02);
+}
+
+.dropzone-icon {
+  font-size: 48px;
+  color: #667eea;
+  margin-bottom: 16px;
+}
+
+.dropzone-text {
+  font-size: 16px;
+  color: #4a5568;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Uploaded Files Section */
+.uploaded-files {
+  margin-top: 40px;
+}
+
+.uploaded-files-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 16px;
+}
+
+.files-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Individual File Item */
+.file-item {
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.file-item:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.file-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.file-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2d3748;
+  word-break: break-word;
+  flex: 1;
+  margin-right: 12px;
+}
+
+.file-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.file-status.uploading {
+  color: #4299e1;
+}
+
+.file-status.complete {
+  color: #48bb78;
+}
+
+.complete-icon {
+  font-size: 16px;
+}
+
+/* Progress Bar Styles */
+.progress-bar-track {
+  width: 100%;
+  height: 8px;
+  background-color: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-blue {
+  background-color: #4299e1;
+  background: linear-gradient(90deg, #4299e1 0%, #667eea 100%);
+}
+
+.progress-green {
+  background-color: #48bb78;
+  background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+  width: 100% !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .file-upload-container {
+    padding: 24px 16px;
+  }
+
+  .dropzone {
+    padding: 40px 24px;
+  }
+
+  .dropzone-icon {
+    font-size: 36px;
+  }
+
+  .dropzone-text {
+    font-size: 14px;
+  }
+
+  .file-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .file-name {
+    margin-right: 0;
+  }
+}

@@ -11,7 +11,7 @@ import './Login.css'
 export default function Login(){
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('Invalid email or password. Please try again.')
+  const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const navigate = useNavigate()
@@ -19,16 +19,37 @@ export default function Login(){
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setError(null)
+    
+    // Clear any previous error
+    setError('')
+    
+    // Check if fields are empty
+    if (!email || !password) {
+      setError('Please enter both email and password.')
+      return
+    }
+    
+    // Try to login with the API
     try{
       const res = await api.login({ email, password })
       const token = res.data.access_token
       const user = res.data.user
       localStorage.setItem('token', token)
       setAuthState({ user, token })
+      console.log('Login Successful')
       navigate('/dashboard')
     }catch(err){
-      setError(err?.response?.data?.detail || 'Invalid email or password. Please try again.')
+      // Dynamic error messages based on API response
+      const errorMessage = err?.response?.data?.detail || 'Invalid email or password. Please try again.'
+      
+      // Check for specific error types
+      if (errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
+        setError('Email not found. Please try again.')
+      } else if (errorMessage.includes('password') || errorMessage.includes('incorrect')) {
+        setError('Invalid password. Please try again.')
+      } else {
+        setError(errorMessage)
+      }
     }
   }
 
