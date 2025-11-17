@@ -3,9 +3,7 @@ import { Routes, Route, Link } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
-import Dashboard from './pages/Dashboard'
 import DashboardNew from './pages/DashboardNew'
-import SubmitClaim from './pages/SubmitClaim'
 import SubmitClaimNew from './pages/SubmitClaimNew'
 import MyClaims from './pages/MyClaims'
 import LeaderEndorsement from './pages/LeaderEndorsement'
@@ -59,9 +57,7 @@ export default function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
         <Route path="/file-upload" element={<FileUpload />} />
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/dashboard-new" element={<ProtectedRoute><DashboardNew /></ProtectedRoute>} />
-        <Route path="/submit-claim" element={<ProtectedRoute><SubmitClaim /></ProtectedRoute>} />
         <Route path="/submit-claim-new" element={<ProtectedRoute><SubmitClaimNew /></ProtectedRoute>} />
         <Route path="/my-claims" element={<ProtectedRoute><MyClaims /></ProtectedRoute>} />
         <Route path="/leader" element={<ProtectedRoute><LeaderEndorsement /></ProtectedRoute>} />

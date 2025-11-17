@@ -37,7 +37,7 @@ export default function Login(){
       localStorage.setItem('token', token)
       setAuthState({ user, token })
       console.log('Login Successful')
-      navigate('/dashboard')
+      navigate('/dashboard-new')
     }catch(err){
       // Dynamic error messages based on API response
       const errorMessage = err?.response?.data?.detail || 'Invalid email or password. Please try again.'
