@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import api from '../services/api'
+import { authAPI } from '../services/api'
 import { FaMountain, FaRegUser } from 'react-icons/fa'
 import { MdOutlineEmail } from 'react-icons/md'
 import { FiLock } from 'react-icons/fi'
@@ -36,7 +36,7 @@ export default function SignUp() {
     setLoading(true)
 
     try {
-      await api.register(formData)
+      await authAPI.register(formData)
       // Redirect to login after successful registration
       navigate('/login')
     } catch (err) {

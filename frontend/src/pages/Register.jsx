@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import api from '../services/api'
+import { authAPI } from '../services/api'
 import { useNavigate, Link } from 'react-router-dom'
 
 export default function Register(){
@@ -15,7 +15,7 @@ export default function Register(){
     e.preventDefault()
     setError(null)
     try{
-      await api.register({ name, email, password, role })
+      await authAPI.register({ name, email, password, role })
       navigate('/login')
     }catch(err){
       setError(err?.response?.data?.detail || 'Registration failed')

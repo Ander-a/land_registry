@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import api from '../services/api'
+import { authAPI } from '../services/api'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { MdOutlineEmail } from 'react-icons/md'
@@ -31,7 +31,7 @@ export default function Login(){
     
     // Try to login with the API
     try{
-      const res = await api.login({ email, password })
+      const res = await authAPI.login({ email, password })
       const token = res.data.access_token
       const user = res.data.user
       localStorage.setItem('token', token)
