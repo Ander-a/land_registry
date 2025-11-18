@@ -1,44 +1,44 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { FaRegFileAlt } from 'react-icons/fa'
 import { FiSearch } from 'react-icons/fi'
 import { FaCheckCircle, FaUserCircle } from 'react-icons/fa'
 import ClaimReviewCard from '../components/ClaimReviewCard'
+import validationService from '../services/validation'
 import './ValidateClaim.css'
 
 export default function ValidateClaim() {
   const [dateFilter, setDateFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [claims, setClaims] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  // Sample claims data
-  const [claims, setClaims] = useState([
-    {
-      id: 'CLM-2024-001',
-      name: 'John Kamau',
-      date: 'November 10, 2024',
-      size: '0.35 Hectares',
-      image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop'
-    },
-    {
-      id: 'CLM-2024-002',
-      name: 'Mary Wanjiku',
-      date: 'November 12, 2024',
-      size: '0.48 Hectares',
-      image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=300&fit=crop'
-    },
-    {
-      id: 'CLM-2024-003',
-      name: 'Peter Omondi',
-      date: 'November 14, 2024',
-      size: '0.22 Hectares',
-      image: 'https://images.unsplash.com/photo-1560493676-04071c5f467b?w=400&h=300&fit=crop'
+  useEffect(() => {
+    fetchPendingClaims()
+  }, [])
+
+  const fetchPendingClaims = async () => {
+    try {
+      setLoading(true)
+      const response = await validationService.getPendingClaims()
+      setClaims(response.data)
+      setError(null)
+    } catch (err) {
+      setError(err?.response?.data?.detail || 'Failed to load pending claims')
+    } finally {
+      setLoading(false)
     }
-  ])
+  }
 
-  const handleApprove = (claimId, comment) => {
-    console.log(`Approved claim ${claimId} with comment:`, comment)
-    // Remove the approved claim from the list
-    setClaims(claims.filter(claim => claim.id !== claimId))
+  const handleApprove = async (claimId, comment) => {
+    try {
+      await validationService.witnessClaim(claimId, comment)
+      // Remove the approved claim from the list
+      setClaims(claims.filter(claim => claim.id !== claimId))
+    } catch (err) {
+      alert(err?.response?.data?.detail || 'Failed to approve claim')
+    }
   }
 
   const handleReject = (claimId, comment) => {
@@ -50,6 +50,15 @@ export default function ValidateClaim() {
     // Remove the rejected claim from the list
     setClaims(claims.filter(claim => claim.id !== claimId))
   }
+
+  // Filter claims based on search term
+  const filteredClaims = claims.filter(claim => {
+    const matchesSearch = searchTerm === '' || 
+      claim.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      claim.claimant_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    return matchesSearch
+  })
 
   return (
     <div className="validate-claim-container">
@@ -114,11 +123,25 @@ export default function ValidateClaim() {
 
         {/* Claim List */}
         <div className="claims-list">
-          {claims.length > 0 ? (
-            claims.map((claim) => (
+          {loading ? (
+            <p className="loading-message">Loading claims...</p>
+          ) : error ? (
+            <p className="error-message">{error}</p>
+          ) : filteredClaims.length > 0 ? (
+            filteredClaims.map((claim) => (
               <ClaimReviewCard
                 key={claim.id}
-                claim={claim}
+                claim={{
+                  id: claim.id,
+                  name: claim.claimant_name || 'Unknown',
+                  date: new Date(claim.created_at).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  }),
+                  size: claim.plot_area ? `${claim.plot_area} Hectares` : 'N/A',
+                  image: `http://localhost:8000/${claim.photo_url}`
+                }}
                 onApprove={handleApprove}
                 onReject={handleReject}
               />

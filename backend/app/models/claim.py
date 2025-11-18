@@ -5,9 +5,12 @@ from pydantic import Field
 
 class Claim(Document):
     user_id: str
+    claimant_name: str  # Name of the person making the claim
+    claimant_email: str  # Email of the claimant
     photo_url: str
     geolocation: dict  # {"latitude": float, "longitude": float}
     boundary: dict  # GeoJSON polygon
+    plot_area: Optional[float] = None  # Area in hectares
     status: str = Field(default="pending")  # "pending" | "validated" | "rejected"
     created_at: datetime = Field(default_factory=datetime.utcnow)
     

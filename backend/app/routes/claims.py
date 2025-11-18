@@ -7,6 +7,7 @@ from ..models.user import User
 from ..schemas.claim import ClaimCreate, ClaimRead, GeoJSONPolygon, GeoLocation
 from ..utils.storage import save_upload_file, get_file_path
 from ..utils.geotag import extract_geolocation
+from ..utils.geo_calc import calculate_boundary_area
 from ..auth.auth import JWTBearer
 
 router = APIRouter(prefix="/claims", tags=["claims"])
@@ -54,12 +55,18 @@ async def create_claim(
             detail="No GPS data found in image EXIF. Please upload a geotagged photo."
         )
     
+    # Calculate plot area from boundary polygon
+    plot_area = calculate_boundary_area(boundary_obj.model_dump())
+    
     # Create claim document
     claim = Claim(
         user_id=str(current_user.id),
+        claimant_name=current_user.name,
+        claimant_email=current_user.email,
         photo_url=photo_path,
         geolocation=geolocation,
         boundary=boundary_obj.model_dump(),
+        plot_area=plot_area,
         status="pending"
     )
     
@@ -69,10 +76,16 @@ async def create_claim(
     return ClaimRead(
         id=str(claim.id),
         user_id=claim.user_id,
+        claimant_name=claim.claimant_name,
+        claimant_email=claim.claimant_email,
         photo_url=claim.photo_url,
         geolocation=GeoLocation(**claim.geolocation),
         boundary=GeoJSONPolygon(**claim.boundary),
+        plot_area=claim.plot_area,
         status=claim.status,
+        validation_status=claim.validation_status,
+        endorsed_by_leader=claim.endorsed_by_leader,
+        witness_count=claim.witness_count,
         created_at=claim.created_at
     )
 
@@ -98,10 +111,16 @@ async def get_claim(claim_id: str):
     return ClaimRead(
         id=str(claim.id),
         user_id=claim.user_id,
+        claimant_name=claim.claimant_name,
+        claimant_email=claim.claimant_email,
         photo_url=claim.photo_url,
         geolocation=GeoLocation(**claim.geolocation),
         boundary=GeoJSONPolygon(**claim.boundary),
+        plot_area=claim.plot_area,
         status=claim.status,
+        validation_status=claim.validation_status,
+        endorsed_by_leader=claim.endorsed_by_leader,
+        witness_count=claim.witness_count,
         created_at=claim.created_at
     )
 
@@ -121,10 +140,16 @@ async def get_user_claims(user_id: str, current_user: User = Depends(JWTBearer()
         ClaimRead(
             id=str(claim.id),
             user_id=claim.user_id,
+            claimant_name=claim.claimant_name,
+            claimant_email=claim.claimant_email,
             photo_url=claim.photo_url,
             geolocation=GeoLocation(**claim.geolocation),
             boundary=GeoJSONPolygon(**claim.boundary),
+            plot_area=claim.plot_area,
             status=claim.status,
+            validation_status=claim.validation_status,
+            endorsed_by_leader=claim.endorsed_by_leader,
+            witness_count=claim.witness_count,
             created_at=claim.created_at
         )
         for claim in claims
@@ -139,10 +164,16 @@ async def get_all_claims(current_user: User = Depends(JWTBearer())):
         ClaimRead(
             id=str(claim.id),
             user_id=claim.user_id,
+            claimant_name=claim.claimant_name,
+            claimant_email=claim.claimant_email,
             photo_url=claim.photo_url,
             geolocation=GeoLocation(**claim.geolocation),
             boundary=GeoJSONPolygon(**claim.boundary),
+            plot_area=claim.plot_area,
             status=claim.status,
+            validation_status=claim.validation_status,
+            endorsed_by_leader=claim.endorsed_by_leader,
+            witness_count=claim.witness_count,
             created_at=claim.created_at
         )
         for claim in claims

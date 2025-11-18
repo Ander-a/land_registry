@@ -232,12 +232,14 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+  gap: 8px;
 }
 
 .file-name {
   font-size: 14px;
   color: var(--text-primary);
   font-weight: 500;
+  flex: 1;
 }
 
 .file-status {
@@ -258,6 +260,28 @@
 
 .status-icon {
   font-size: 16px;
+}
+
+.remove-file-btn {
+  background: none;
+  border: none;
+  color: #e53e3e;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.remove-file-btn:hover {
+  background-color: #fff5f5;
+  color: #c53030;
+}
+
+.remove-file-btn svg {
+  font-size: 18px;
 }
 
 .progress-bar {

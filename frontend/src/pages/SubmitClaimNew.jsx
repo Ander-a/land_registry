@@ -1,24 +1,77 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { FiUpload, FiCheckCircle, FiX } from 'react-icons/fi'
 import { MdAutoFixHigh } from 'react-icons/md'
 import './SubmitClaimNew.css'
 
 export default function SubmitClaimNew() {
-  const [showToast, setShowToast] = useState(true)
+  const [showToast, setShowToast] = useState(false)
+  const [uploadedFiles, setUploadedFiles] = useState([])
+  const fileInputRef = useRef(null)
 
-  // Sample uploaded files data
-  const uploadedFiles = [
-    {
-      name: 'IMG_4582.jpg',
-      status: 'uploading',
-      progress: 65
-    },
-    {
-      name: 'EVIDENCE_01.png',
-      status: 'complete',
-      progress: 100
-    }
-  ]
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files)
+    handleFiles(files)
+  }
+
+  const handleFiles = (files) => {
+    files.forEach(file => {
+      // Create a unique ID for each file
+      const fileId = Date.now() + Math.random()
+      
+      // Add file to state with initial uploading status
+      const newFile = {
+        id: fileId,
+        name: file.name,
+        size: file.size,
+        status: 'uploading',
+        progress: 0,
+        file: file
+      }
+      
+      setUploadedFiles(prev => [...prev, newFile])
+      
+      // Simulate upload progress
+      simulateUpload(fileId)
+    })
+  }
+
+  const simulateUpload = (fileId) => {
+    let progress = 0
+    const interval = setInterval(() => {
+      progress += 10
+      
+      setUploadedFiles(prev => prev.map(file => 
+        file.id === fileId 
+          ? { ...file, progress: Math.min(progress, 100) }
+          : file
+      ))
+      
+      if (progress >= 100) {
+        clearInterval(interval)
+        setUploadedFiles(prev => prev.map(file => 
+          file.id === fileId 
+            ? { ...file, status: 'complete' }
+            : file
+        ))
+      }
+    }, 200)
+  }
+
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const files = Array.from(e.dataTransfer.files)
+    handleFiles(files)
+  }
+
+  const handleRemoveFile = (fileId) => {
+    setUploadedFiles(prev => prev.filter(file => file.id !== fileId))
+  }
 
   const handleAutoDetect = () => {
     alert('Auto-detect boundary feature activated!')
@@ -65,40 +118,72 @@ export default function SubmitClaimNew() {
           <h2 className="card-title">Upload Geotagged Evidence</h2>
           
           {/* Drag & Drop Area */}
-          <div className="drag-drop-area">
+          <div 
+            className="drag-drop-area"
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            style={{ cursor: 'pointer' }}
+          >
             <FiUpload className="upload-icon" />
             <p className="drag-drop-text">Drag & drop images here or click to browse.</p>
             <p className="drag-drop-note">At least one image is required.</p>
           </div>
 
+          {/* Hidden File Input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleFileSelect}
+            style={{ display: 'none' }}
+          />
+
           {/* Upload Button */}
-          <button className="upload-button">
+          <button 
+            className="upload-button"
+            onClick={() => fileInputRef.current?.click()}
+            type="button"
+          >
             <FiUpload className="button-icon" />
             Upload Files
           </button>
 
           {/* Uploaded Files Section */}
-          <div className="uploaded-files-section">
-            <h3 className="section-title">Uploaded Files</h3>
-            
-            {uploadedFiles.map((file, index) => (
-              <div key={index} className="file-item">
-                <div className="file-info">
-                  <span className="file-name">{file.name}</span>
-                  <span className={`file-status ${file.status}`}>
-                    {file.status === 'complete' && <FiCheckCircle className="status-icon" />}
-                    {file.status === 'uploading' ? 'Uploading...' : 'Complete'}
-                  </span>
+          {uploadedFiles.length > 0 && (
+            <div className="uploaded-files-section">
+              <h3 className="section-title">Uploaded Files</h3>
+              
+              {uploadedFiles.map((file) => (
+                <div key={file.id} className="file-item">
+                  <div className="file-info">
+                    <span className="file-name">{file.name}</span>
+                    <span className={`file-status ${file.status}`}>
+                      {file.status === 'complete' && <FiCheckCircle className="status-icon" />}
+                      {file.status === 'uploading' ? 'Uploading...' : 'Complete'}
+                    </span>
+                    {file.status === 'complete' && (
+                      <button
+                        className="remove-file-btn"
+                        onClick={() => handleRemoveFile(file.id)}
+                        type="button"
+                        title="Remove file"
+                      >
+                        <FiX />
+                      </button>
+                    )}
+                  </div>
+                  <div className="progress-bar">
+                    <div 
+                      className={`progress-fill ${file.status}`}
+                      style={{ width: `${file.progress}%` }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="progress-bar">
-                  <div 
-                    className={`progress-fill ${file.status}`}
-                    style={{ width: `${file.progress}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Right Column - Define Parcel Boundary */}

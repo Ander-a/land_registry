@@ -1,17 +1,38 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import { FiCheckCircle, FiDownload, FiFlag } from 'react-icons/fi'
+import claimsService from '../services/claims'
+import validationService from '../services/validation'
 import './ClaimDetailsNew.css'
 
 export default function ClaimDetailsNew() {
-  const claimId = '12345'
+  const { id } = useParams()
+  const [claim, setClaim] = useState(null)
+  const [validations, setValidations] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  const claimInfo = {
-    claimantName: 'Amina Okoro',
-    dateSubmitted: 'August 15, 2023',
-    gpsCoordinates: '1.286389, 36.817223',
-    plotArea: '0.25 Hectares',
-    validatorId: 'VAL-AI-789'
+  useEffect(() => {
+    if (id) {
+      fetchClaimDetails()
+    }
+  }, [id])
+
+  const fetchClaimDetails = async () => {
+    try {
+      setLoading(true)
+      const claimResponse = await claimsService.getClaim(id)
+      setClaim(claimResponse.data)
+
+      const validationResponse = await validationService.getClaimValidations(id)
+      setValidations(validationResponse.data)
+
+      setError(null)
+    } catch (err) {
+      setError(err?.response?.data?.detail || 'Failed to load claim details')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleDownloadCertificate = () => {
@@ -22,26 +43,45 @@ export default function ClaimDetailsNew() {
     alert('Report issue form opened!')
   }
 
+  if (loading) {
+    return (
+      <div className="claim-details-container">
+        <p className="loading-message">Loading claim details...</p>
+      </div>
+    )
+  }
+
+  if (error || !claim) {
+    return (
+      <div className="claim-details-container">
+        <p className="error-message">{error || 'Claim not found'}</p>
+        <Link to="/my-claims" className="back-link">← Back to Claims</Link>
+      </div>
+    )
+  }
+
   return (
     <div className="claim-details-container">
       {/* Header Section */}
       <div className="claim-header">
         {/* Breadcrumb Navigation */}
         <nav className="breadcrumb">
-          <Link to="/dashboard" className="breadcrumb-link">Dashboard</Link>
+          <Link to="/dashboard-new" className="breadcrumb-link">Dashboard</Link>
           <span className="breadcrumb-separator">/</span>
           <Link to="/my-claims" className="breadcrumb-link">Claims</Link>
           <span className="breadcrumb-separator">/</span>
-          <span className="breadcrumb-current">Claim #{claimId}</span>
+          <span className="breadcrumb-current">Claim #{claim.id?.substring(0, 8)}</span>
         </nav>
 
         {/* Title and Badge */}
         <div className="title-row">
-          <h1 className="page-title">Claim Details: #{claimId}</h1>
-          <div className="verified-badge">
-            <FiCheckCircle className="badge-icon" />
-            <span className="badge-text">Verified</span>
-          </div>
+          <h1 className="page-title">Claim Details: #{claim.id?.substring(0, 8)}</h1>
+          {claim.status === 'validated' && (
+            <div className="verified-badge">
+              <FiCheckCircle className="badge-icon" />
+              <span className="badge-text">Verified</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -59,9 +99,12 @@ export default function ClaimDetailsNew() {
             </div>
             <div className="image-container">
               <img
-                src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop"
+                src={`http://localhost:8000/${claim.photo_url}`}
                 alt="Land plot with landmarks"
                 className="claim-image"
+                onError={(e) => {
+                  e.target.src = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop'
+                }}
               />
             </div>
           </div>
@@ -94,23 +137,41 @@ export default function ClaimDetailsNew() {
             <dl className="info-list">
               <div className="info-item">
                 <dt className="info-label">Claimant Name</dt>
-                <dd className="info-value">{claimInfo.claimantName}</dd>
+                <dd className="info-value">{claim.claimant_name || 'N/A'}</dd>
               </div>
               <div className="info-item">
                 <dt className="info-label">Date Submitted</dt>
-                <dd className="info-value">{claimInfo.dateSubmitted}</dd>
+                <dd className="info-value">
+                  {new Date(claim.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </dd>
               </div>
               <div className="info-item">
                 <dt className="info-label">GPS Coordinates</dt>
-                <dd className="info-value">{claimInfo.gpsCoordinates}</dd>
+                <dd className="info-value">
+                  {claim.geolocation?.latitude?.toFixed(6)}, {claim.geolocation?.longitude?.toFixed(6)}
+                </dd>
               </div>
               <div className="info-item">
                 <dt className="info-label">Plot Area</dt>
-                <dd className="info-value">{claimInfo.plotArea}</dd>
+                <dd className="info-value">{claim.plot_area || 'N/A'} Hectares</dd>
               </div>
               <div className="info-item">
-                <dt className="info-label">Validator ID</dt>
-                <dd className="info-value">{claimInfo.validatorId}</dd>
+                <dt className="info-label">Status</dt>
+                <dd className="info-value" style={{ textTransform: 'capitalize' }}>
+                  {claim.status}
+                </dd>
+              </div>
+              <div className="info-item">
+                <dt className="info-label">Witnesses</dt>
+                <dd className="info-value">{claim.witness_count || 0}</dd>
+              </div>
+              <div className="info-item">
+                <dt className="info-label">Leader Endorsed</dt>
+                <dd className="info-value">{claim.endorsed_by_leader ? 'Yes' : 'No'}</dd>
               </div>
             </dl>
           </div>

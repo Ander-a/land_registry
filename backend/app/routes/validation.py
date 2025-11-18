@@ -292,9 +292,12 @@ async def get_pending_claims_for_validation(
         result.append({
             "id": str(claim.id),
             "user_id": claim.user_id,
+            "claimant_name": claim.claimant_name,
+            "claimant_email": claim.claimant_email,
             "photo_url": claim.photo_url,
             "geolocation": claim.geolocation,
             "boundary": claim.boundary,
+            "plot_area": claim.plot_area,
             "status": claim.status,
             "validation_status": claim.validation_status,
             "witness_count": claim.witness_count,
