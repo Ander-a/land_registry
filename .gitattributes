@@ -1,0 +1,41 @@
+# Git Attributes for Cross-Platform Development
+# Prevents Windows CRLF line-ending errors in Linux containers
+
+# Force LF (Unix-style) line endings for all text files
+* text=auto
+
+# Shell scripts must use LF (critical for Docker/Linux)
+*.sh text eol=lf
+
+# Python files must use LF
+*.py text eol=lf
+
+# JavaScript/TypeScript files must use LF
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.json text eol=lf
+
+# Configuration files
+*.yml text eol=lf
+*.yaml text eol=lf
+.env* text eol=lf
+Dockerfile* text eol=lf
+
+# CSS files
+*.css text eol=lf
+
+# HTML files
+*.html text eol=lf
+
+# Markdown files
+*.md text eol=lf
+
+# Binary files (don't modify)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
