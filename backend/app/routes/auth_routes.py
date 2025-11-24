@@ -29,7 +29,13 @@ async def register(user_in: UserCreate):
 
 @router.post("/login")
 async def login(payload: UserLogin):
+    print(f"[DEBUG] Login attempt for: {payload.email}")
     user = await User.find_one(User.email == payload.email)
+    print(f"[DEBUG] User found: {user is not None}")
+    if user:
+        print(f"[DEBUG] User email: {user.email}, role: {user.role}")
+        verify_result = verify_password(payload.password, user.hashed_password)
+        print(f"[DEBUG] Password verification: {verify_result}")
     if not user or not verify_password(payload.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
     

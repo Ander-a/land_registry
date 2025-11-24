@@ -41,7 +41,6 @@ export default function App() {
             {isAuthenticated() && (
               <>
                 <Link to="/dashboard-new" className="nav-link">Dashboard</Link>
-                <Link to="/submit-claim-new" className="nav-link">Submit Claim</Link>
                 <Link to="/my-claims" className="nav-link">My Claims</Link>
                 <Link to="/validate-claim" className="nav-link">Validate</Link>
                 {isLeader && <Link to="/leader" className="nav-link">Leader Panel</Link>}
