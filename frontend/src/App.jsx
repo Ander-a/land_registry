@@ -24,6 +24,11 @@ import ClaimDetail from './pages/ClaimDetail'
 import ClaimDetailsNew from './pages/ClaimDetailsNew'
 import ValidateClaim from './pages/ValidateClaim'
 import PropertyManagement from './pages/PropertyManagement'
+import AdminOverview from './pages/admin/AdminOverview'
+import MasterGISMap from './pages/admin/MasterGISMap'
+import RegistryDatabase from './pages/admin/RegistryDatabase'
+import UserRoleManagement from './pages/admin/UserRoleManagement'
+import CertificateMinting from './pages/admin/CertificateMinting'
 import FileUpload from './components/FileUpload'
 import ProtectedRoute from './components/ProtectedRoute'
 import { useAuth } from './contexts/AuthContext'
@@ -106,6 +111,48 @@ export default function App() {
       <Route path="/claim/:id" element={<ProtectedRoute><ClaimDetail /></ProtectedRoute>} />
       <Route path="/claim-details-new" element={<ProtectedRoute><ClaimDetailsNew /></ProtectedRoute>} />
       <Route path="/validate-claim" element={<ProtectedRoute><ValidateClaim /></ProtectedRoute>} />
+      
+      {/* Admin Portal Routes */}
+      <Route 
+        path="/admin/overview" 
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminOverview />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/gis-map" 
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <MasterGISMap />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/registry" 
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <RegistryDatabase />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/users" 
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <UserRoleManagement />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/certificates" 
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <CertificateMinting />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
   )
 }

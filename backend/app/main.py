@@ -21,6 +21,7 @@ from .routes.approval_routes import router as approval_router
 from .routes.profile_routes import router as profile_router
 from .routes.transaction_routes import router as transaction_router
 from .routes.property_routes import router as property_router
+from .routes.analytics_routes import router as analytics_router
 from .services.websocket_service import socket_app
 from .db import init_db, close_db
 from .ai.model_loader import load_models
@@ -66,6 +67,7 @@ app.include_router(approval_router)  # Approval management
 app.include_router(profile_router)  # User profile management
 app.include_router(transaction_router)  # Transaction management
 app.include_router(property_router)  # Property management (valuations, tax, permits)
+app.include_router(analytics_router)  # Analytics and reporting
 
 # Mount WebSocket server at /ws
 app.mount("/ws", socket_app)
