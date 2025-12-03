@@ -48,6 +48,7 @@ async def login(payload: UserLogin):
             name=user.name,
             email=user.email,
             role=user.role,
+            is_active=user.is_active,
             created_at=user.created_at
         )
     }
@@ -59,5 +60,6 @@ async def me(current_user: User = Depends(JWTBearer())):
         name=current_user.name,
         email=current_user.email,
         role=current_user.role,
+        is_active=current_user.is_active,
         created_at=current_user.created_at
     )

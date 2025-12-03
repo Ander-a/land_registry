@@ -1,11 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authAPI } from '../services/api'
-import { FaMountain, FaRegUser } from 'react-icons/fa'
-import { MdOutlineEmail } from 'react-icons/md'
-import { FiLock } from 'react-icons/fi'
-import { BiShow, BiHide } from 'react-icons/bi'
-import { BsBuilding } from 'react-icons/bs'
+import { FiUser, FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi'
+import { HiOutlineShieldCheck } from 'react-icons/hi'
 import './SignUp.css'
 
 export default function SignUp() {
@@ -13,11 +10,13 @@ export default function SignUp() {
     name: '',
     email: '',
     password: '',
-    role: 'official'
+    confirmPassword: '',
+    role: 'resident'
   })
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const navigate = useNavigate()
 
   const handleChange = (e) => {
@@ -26,18 +25,28 @@ export default function SignUp() {
       ...prev,
       [name]: value
     }))
-    // Clear error when user starts typing
     if (error) setError(null)
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError(null)
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long')
+      return
+    }
+
     setLoading(true)
 
     try {
-      await authAPI.register(formData)
-      // Redirect to login after successful registration
+      const { confirmPassword, ...registrationData } = formData
+      await authAPI.register(registrationData)
       navigate('/login')
     } catch (err) {
       setError(err.response?.data?.detail || 'Registration failed. Please try again.')
@@ -47,145 +56,139 @@ export default function SignUp() {
   }
 
   return (
-    <div className="signup-container">
-      {/* Logo Header */}
-      <div className="signup-logo">
-        <FaMountain className="logo-icon" />
-        <h1 className="logo-text">AI Land Registry</h1>
-      </div>
-
-      {/* Signup Card */}
-      <div className="signup-card">
-        {/* Card Header */}
+    <div className="signup-page">
+      <div className="signup-container">
+        {/* Header */}
         <div className="signup-header">
-          <h2 className="signup-title">Create Your Account</h2>
-          <p className="signup-subtitle">
-            Join the AI-Assisted Land Registry System to get started.
-          </p>
+          <HiOutlineShieldCheck className="brand-icon" />
+          <h2 className="brand-name">Land Registry</h2>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="error-box">
-            <svg className="error-icon" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-            <span className="error-text">{error}</span>
-          </div>
-        )}
+        {/* Signup Card */}
+        <div className="signup-card">
+          <div className="signup-content">
+            <h1 className="signup-title">Create an Account</h1>
+            <p className="signup-subtitle">Get started with the Land Registry Portal.</p>
 
-        {/* Signup Form */}
-        <form className="signup-form" onSubmit={handleSubmit}>
-          {/* Full Name Field */}
-          <div className="form-group">
-            <label htmlFor="name" className="form-label">
-              Full Name
-            </label>
-            <div className="input-wrapper">
-              <FaRegUser className="input-icon" />
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                value={formData.name}
-                onChange={handleChange}
-                className="form-input"
-                placeholder="John Doe"
-              />
-            </div>
-          </div>
+            {error && (
+              <div className="error-message">
+                {error}
+              </div>
+            )}
 
-          {/* Email Field */}
-          <div className="form-group">
-            <label htmlFor="email" className="form-label">
-              Email Address
-            </label>
-            <div className="input-wrapper">
-              <MdOutlineEmail className="input-icon" />
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                className="form-input"
-                placeholder="you@example.com"
-              />
-            </div>
-          </div>
+            <form onSubmit={handleSubmit} className="signup-form">
+              {/* Full Name */}
+              <div className="form-group">
+                <label htmlFor="name" className="form-label">
+                  Full Name
+                </label>
+                <div className="input-wrapper">
+                  <FiUser className="input-icon" />
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="form-input"
+                    placeholder="John Doe"
+                  />
+                </div>
+              </div>
 
-          {/* Password Field */}
-          <div className="form-group">
-            <label htmlFor="password" className="form-label">
-              Password
-            </label>
-            <div className="input-wrapper">
-              <FiLock className="input-icon" />
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                autoComplete="new-password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                className="form-input"
-                placeholder="Create a strong password"
-              />
+              {/* Email */}
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">
+                  Email
+                </label>
+                <div className="input-wrapper">
+                  <FiMail className="input-icon" />
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="form-input"
+                    placeholder="you@example.com"
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div className="form-group">
+                <label htmlFor="password" className="form-label">
+                  Password
+                </label>
+                <div className="input-wrapper">
+                  <FiLock className="input-icon" />
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="form-input"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="toggle-password"
+                  >
+                    {showPassword ? <FiEyeOff /> : <FiEye />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirm Password */}
+              <div className="form-group">
+                <label htmlFor="confirmPassword" className="form-label">
+                  Confirm Password
+                </label>
+                <div className="input-wrapper">
+                  <FiLock className="input-icon" />
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className="form-input"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="toggle-password"
+                  >
+                    {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+                  </button>
+                </div>
+              </div>
+
               <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="toggle-password"
+                type="submit"
+                disabled={loading}
+                className="signup-button"
               >
-                {showPassword ? <BiHide /> : <BiShow />}
+                {loading ? 'Creating Account...' : 'Sign Up'}
               </button>
+            </form>
+
+            <div className="signup-footer">
+              <p className="footer-text">
+                Already have an account?{' '}
+                <Link to="/login" className="footer-link">
+                  Log In
+                </Link>
+              </p>
             </div>
           </div>
-
-          {/* Role Selection Field */}
-          <div className="form-group">
-            <label htmlFor="role" className="form-label">
-              Select Your Role
-            </label>
-            <div className="input-wrapper">
-              <BsBuilding className="input-icon" />
-              <select
-                id="role"
-                name="role"
-                required
-                value={formData.role}
-                onChange={handleChange}
-                className="form-select"
-              >
-                <option value="official">Government Official</option>
-                <option value="citizen">Citizen</option>
-                <option value="surveyor">Land Surveyor</option>
-                <option value="leader">Community Leader</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="signup-button"
-          >
-            {loading ? 'Creating Account...' : 'Create Account'}
-          </button>
-        </form>
-
-        {/* Footer */}
-        <div className="signup-footer">
-          <p className="footer-text">
-            Already have an account?{' '}
-            <Link to="/login" className="footer-link">
-              Log in
-            </Link>
-          </p>
         </div>
       </div>
     </div>

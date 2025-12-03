@@ -8,6 +8,9 @@ from .routes.auth_routes import router as auth_router
 from .routes.claims import router as claims_router
 from .routes.ai_routes import router as ai_router
 from .routes.validation import router as validation_router
+from .routes.rbac_examples import router as rbac_examples_router
+from .routes.admin import router as admin_router
+from .routes.community import router as community_router
 from .db import init_db, close_db
 from .ai.model_loader import load_models
 
@@ -39,7 +42,15 @@ app.include_router(auth_router)
 app.include_router(claims_router)
 app.include_router(ai_router)
 app.include_router(validation_router)
+app.include_router(rbac_examples_router)  # RBAC example routes
+app.include_router(admin_router)  # Admin user management routes
+app.include_router(community_router)  # Community feed routes
 
 @app.get("/")
 def root():
-    return {"message": "API running"}
+    return {
+        "message": "AI-Assisted Land Registry API",
+        "version": "1.0.0",
+        "roles": ["resident", "community_member", "local_leader", "admin"],
+        "docs": "/docs"
+    }

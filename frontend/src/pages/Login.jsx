@@ -2,163 +2,141 @@ import React, { useState } from 'react'
 import { authAPI } from '../services/api'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { MdOutlineEmail } from 'react-icons/md'
-import { FiLock } from 'react-icons/fi'
-import { BiShow, BiHide } from 'react-icons/bi'
-import { IoWarningOutline } from 'react-icons/io5'
+import { FiUser, FiLock } from 'react-icons/fi'
 import './Login.css'
 
 export default function Login(){
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
   const navigate = useNavigate()
   const { setAuthState } = useAuth()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    // Clear any previous error
     setError('')
     
-    // Check if fields are empty
     if (!email || !password) {
       setError('Please enter both email and password.')
       return
     }
     
-    // Try to login with the API
     try{
       const res = await authAPI.login({ email, password })
       const token = res.data.access_token
       const user = res.data.user
       localStorage.setItem('token', token)
       setAuthState({ user, token })
-      console.log('Login Successful')
-      navigate('/dashboard-new')
-    }catch(err){
-      // Dynamic error messages based on API response
-      const errorMessage = err?.response?.data?.detail || 'Invalid email or password. Please try again.'
       
-      // Check for specific error types
-      if (errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
-        setError('Email not found. Please try again.')
-      } else if (errorMessage.includes('password') || errorMessage.includes('incorrect')) {
-        setError('Invalid password. Please try again.')
+      // Redirect based on user role
+      if (user.role === 'resident') {
+        navigate('/resident/dashboard')
+      } else if (user.role === 'local_leader') {
+        navigate('/leader')
+      } else if (user.role === 'community_member') {
+        navigate('/validate-claim')
+      } else if (user.role === 'admin') {
+        navigate('/dashboard-new')
       } else {
-        setError(errorMessage)
+        navigate('/dashboard-new')
       }
+    }catch(err){
+      const errorMessage = err?.response?.data?.detail || 'Invalid email or password. Please try again.'
+      setError(errorMessage)
     }
   }
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        {/* Title and Subtitle */}
+    <div className="login-page">
+      {/* Left Side - Map */}
+      <div className="login-map-side">
+        <div className="map-container">
+          <img 
+            src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&h=1000&fit=crop" 
+            alt="Land Registry Map"
+            className="map-image"
+          />
+        </div>
+      </div>
+
+      {/* Right Side - Login Form */}
+      <div className="login-form-side">
         <div className="login-header">
-          <h1 className="login-title">AI Land Registry Portal</h1>
-          <p className="login-subtitle">Securely access your land registry data.</p>
+          <h2 className="brand-name">Land Registry</h2>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="error-box">
-            <IoWarningOutline className="error-icon" />
-            <span className="error-text">{error}</span>
-          </div>
-        )}
+        <div className="login-card">
+          <div className="login-content">
+            <h1 className="login-title">Login</h1>
+            <p className="login-subtitle">Access your Land Registry account</p>
 
-        {/* Login Form */}
-        <form className="login-form" onSubmit={handleSubmit}>
-          {/* Email Field */}
-          <div className="form-group">
-            <label htmlFor="email" className="form-label">
-              Email Address
-            </label>
-            <div className="input-wrapper">
-              <MdOutlineEmail className="input-icon" />
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="form-input"
-                placeholder="you@example.com"
-              />
-            </div>
-          </div>
+            <form onSubmit={handleSubmit} className="login-form">
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">
+                  Username or Email
+                </label>
+                <div className="input-wrapper">
+                  <FiUser className="input-icon" />
+                  <input
+                    id="email"
+                    type="text"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your username or email"
+                    className="form-input"
+                    required
+                  />
+                </div>
+              </div>
 
-          {/* Password Field */}
-          <div className="form-group">
-            <label htmlFor="password" className="form-label">
-              Password
-            </label>
-            <div className="input-wrapper">
-              <FiLock className="input-icon" />
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="form-input"
-                placeholder="Enter your password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="toggle-password"
-              >
-                {showPassword ? <BiHide /> : <BiShow />}
+              <div className="form-group">
+                <div className="label-row">
+                  <label htmlFor="password" className="form-label">
+                    Password
+                  </label>
+                  <Link to="/forgot-password" className="forgot-link">
+                    Forgot Password?
+                  </Link>
+                </div>
+                <div className="input-wrapper">
+                  <FiLock className="input-icon" />
+                  <input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    className="form-input"
+                    required
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <div className="error-message">
+                  {error}
+                </div>
+              )}
+
+              <button type="submit" className="login-button">
+                Login
               </button>
+            </form>
+
+            <div className="login-footer">
+              <p className="footer-text">
+                Don't have an account?{' '}
+                <Link to="/signup" className="footer-link">
+                  Register Now
+                </Link>
+              </p>
             </div>
           </div>
+        </div>
 
-          {/* Options Row */}
-          <div className="options-row">
-            <div className="remember-me">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="checkbox"
-              />
-              <label htmlFor="remember-me" className="checkbox-label">
-                Remember me
-              </label>
-            </div>
-
-            <a href="#" className="forgot-password">
-              Forgot Password?
-            </a>
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="login-button"
-          >
-            Login
-          </button>
-        </form>
-
-        {/* Footer */}
-        <div className="login-footer">
-          <p className="footer-text">
-            Don't have an account?{' '}
-            <Link to="/signup" className="footer-link">
-              Request Access
-            </Link>
-          </p>
+        <div className="page-footer">
+          <Link to="/terms" className="footer-link-item">Terms of Service</Link>
+          <Link to="/privacy" className="footer-link-item">Privacy Policy</Link>
         </div>
       </div>
     </div>

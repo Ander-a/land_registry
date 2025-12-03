@@ -5,33 +5,27 @@ from bson import ObjectId
 from ..models.user import User
 from ..models.claim import Claim
 from ..models.validation import Validation
+from ..models.roles import UserRole
 from ..schemas.validation import ValidationCreate, ValidationRead, ValidationResponse
-from ..auth.auth import JWTBearer
+from ..auth.auth import get_current_user
+from ..auth.rbac import RoleChecker, require_validator, require_leader
 
 router = APIRouter(prefix="/validation", tags=["validation"])
 
-def require_citizen(current_user: User = Depends(JWTBearer())) -> User:
-    """Dependency to ensure user is a citizen."""
-    if current_user.role not in ["citizen", "leader"]:  # Leaders can also witness
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only citizens can witness claims"
-        )
-    return current_user
+# Define role checkers using the new RBAC system
+require_community_validator = RoleChecker([UserRole.COMMUNITY_MEMBER, UserRole.LOCAL_LEADER])
+require_local_leader = RoleChecker([UserRole.LOCAL_LEADER])
 
-def require_leader(current_user: User = Depends(JWTBearer())) -> User:
-    """Dependency to ensure user is a leader."""
-    if current_user.role != "leader":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only leaders can endorse claims"
-        )
-    return current_user
-
-@router.post("/witness", response_model=ValidationResponse)
+@router.post(
+    "/witness",
+    response_model=ValidationResponse,
+    dependencies=[Depends(require_community_validator)],
+    summary="Community member witnesses a claim",
+    description="Allows COMMUNITY_MEMBER and LOCAL_LEADER to witness/validate land claims"
+)
 async def witness_claim(
     validation_data: ValidationCreate,
-    current_user: User = Depends(require_citizen)
+    current_user: User = Depends(get_current_user)
 ):
     """
     Submit witness endorsement for a land claim.
@@ -112,10 +106,16 @@ async def witness_claim(
         endorsed_by_leader=claim.endorsed_by_leader
     )
 
-@router.post("/leader", response_model=ValidationResponse)
+@router.post(
+    "/leader",
+    response_model=ValidationResponse,
+    dependencies=[Depends(require_local_leader)],
+    summary="Local leader endorses a claim",
+    description="Allows only LOCAL_LEADER role to provide final endorsement"
+)
 async def leader_endorse_claim(
     validation_data: ValidationCreate,
-    current_user: User = Depends(require_leader)
+    current_user: User = Depends(get_current_user)
 ):
     """
     Leader endorsement for a land claim.
@@ -198,7 +198,7 @@ async def leader_endorse_claim(
 @router.get("/claim/{claim_id}", response_model=List[ValidationRead])
 async def get_claim_validations(
     claim_id: str,
-    current_user: User = Depends(JWTBearer())
+    current_user: User = Depends(get_current_user)
 ):
     """
     Get validation history for a specific claim.
@@ -246,13 +246,13 @@ async def get_claim_validations(
 
 @router.get("/pending-claims", response_model=List[dict])
 async def get_pending_claims_for_validation(
-    current_user: User = Depends(JWTBearer())
+    current_user: User = Depends(get_current_user)
 ):
     """
     Get claims that are pending validation.
     
-    For citizens/witnesses: Returns claims they haven't witnessed yet
-    For leaders: Returns claims with 2+ witnesses that need leader endorsement
+    For COMMUNITY_MEMBER: Returns claims they haven't witnessed yet
+    For LOCAL_LEADER: Returns claims with 2+ witnesses that need leader endorsement
     
     Args:
         current_user: Authenticated user
@@ -260,7 +260,7 @@ async def get_pending_claims_for_validation(
     Returns:
         List of claims pending validation
     """
-    if current_user.role == "leader":
+    if current_user.role == UserRole.LOCAL_LEADER:
         # Leaders see claims with 2+ witnesses that haven't been endorsed
         claims = await Claim.find(
             Claim.witness_count >= 2,
