@@ -12,7 +12,7 @@ from app.models.validation import (
 )
 from app.models.claim import Claim
 from app.models.user import User
-from app.routes.auth import get_current_user
+from app.auth.auth import get_current_user
 from app.services.consensus_engine import ConsensusEngine
 from app.services.notification_service import NotificationService
 

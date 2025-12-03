@@ -6,7 +6,7 @@ from beanie import PydanticObjectId
 
 from app.models.user import User
 from app.models.claim import Claim
-from app.models.notification_preference import NotificationPreference
+from app.models.notification import NotificationPreference
 from app.models.activity_log import ActivityLog
 from app.auth import get_current_user
 

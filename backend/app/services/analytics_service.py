@@ -7,7 +7,7 @@ from typing import Dict, List, Any, Optional
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from app.models.land_claim import LandClaim
+from app.models.claim import Claim
 from app.models.land_transaction import LandTransaction
 from app.models.property_valuation import PropertyValuation
 from app.models.tax_assessment import TaxAssessment
@@ -28,9 +28,9 @@ class AnalyticsService:
         Returns total counts and growth percentages
         """
         # Get current counts
-        total_properties = await LandClaim.find().count()
-        pending_approvals = await LandClaim.find(
-            LandClaim.status == "pending"
+        total_properties = await Claim.find().count()
+        pending_approvals = await Claim.find(
+            Claim.status == "pending"
         ).count()
         total_certificates = await Certificate.find().count()
         active_users = await User.find(
@@ -43,24 +43,24 @@ class AnalyticsService:
         sixty_days_ago = now - timedelta(days=60)
         
         # Properties growth
-        properties_last_30 = await LandClaim.find(
-            LandClaim.created_at >= thirty_days_ago
+        properties_last_30 = await Claim.find(
+            Claim.created_at >= thirty_days_ago
         ).count()
-        properties_prev_30 = await LandClaim.find(
-            LandClaim.created_at >= sixty_days_ago,
-            LandClaim.created_at < thirty_days_ago
+        properties_prev_30 = await Claim.find(
+            Claim.created_at >= sixty_days_ago,
+            Claim.created_at < thirty_days_ago
         ).count()
         properties_growth = self._calculate_growth(properties_last_30, properties_prev_30)
         
         # Approvals growth
-        approvals_last_30 = await LandClaim.find(
-            LandClaim.status == "approved",
-            LandClaim.updated_at >= thirty_days_ago
+        approvals_last_30 = await Claim.find(
+            Claim.status == "approved",
+            Claim.updated_at >= thirty_days_ago
         ).count()
-        approvals_prev_30 = await LandClaim.find(
-            LandClaim.status == "approved",
-            LandClaim.updated_at >= sixty_days_ago,
-            LandClaim.updated_at < thirty_days_ago
+        approvals_prev_30 = await Claim.find(
+            Claim.status == "approved",
+            Claim.updated_at >= sixty_days_ago,
+            Claim.updated_at < thirty_days_ago
         ).count()
         approvals_growth = self._calculate_growth(approvals_last_30, approvals_prev_30)
         
@@ -113,16 +113,16 @@ class AnalyticsService:
                 month_end = (now - timedelta(days=30 * (i - 1))).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
             
             # Count registrations in this month
-            registrations = await LandClaim.find(
-                LandClaim.created_at >= month_start,
-                LandClaim.created_at < month_end
+            registrations = await Claim.find(
+                Claim.created_at >= month_start,
+                Claim.created_at < month_end
             ).count()
             
             # Count approvals in this month
-            approvals = await LandClaim.find(
-                LandClaim.status == "approved",
-                LandClaim.updated_at >= month_start,
-                LandClaim.updated_at < month_end
+            approvals = await Claim.find(
+                Claim.status == "approved",
+                Claim.updated_at >= month_start,
+                Claim.updated_at < month_end
             ).count()
             
             # Count certificates issued in this month
@@ -151,9 +151,9 @@ class AnalyticsService:
         thirty_days_ago = now - timedelta(days=30)
         
         # Surveying: New land claims with coordinates
-        surveying = await LandClaim.find(
-            LandClaim.created_at >= thirty_days_ago,
-            LandClaim.coordinates != None
+        surveying = await Claim.find(
+            Claim.created_at >= thirty_days_ago,
+            Claim.coordinates != None
         ).count()
         
         # Legal: Disputes and validations
@@ -209,7 +209,7 @@ class AnalyticsService:
         activities = []
         
         # Recent land claims
-        recent_claims = await LandClaim.find().sort("-created_at").limit(limit // 4).to_list()
+        recent_claims = await Claim.find().sort("-created_at").limit(limit // 4).to_list()
         for claim in recent_claims:
             activities.append({
                 "id": str(claim.id),

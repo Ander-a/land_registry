@@ -11,7 +11,8 @@ import io
 from app.models.user import User
 from app.services.analytics_service import AnalyticsService
 from app.services.report_service import ReportService
-from app.dependencies import get_current_user, get_db
+from app.auth import get_current_user
+from app.database import get_db
 
 
 router = APIRouter(prefix="/api/analytics", tags=["analytics"])

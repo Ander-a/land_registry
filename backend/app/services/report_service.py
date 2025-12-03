@@ -8,7 +8,7 @@ import io
 import csv
 from bson import ObjectId
 
-from app.models.land_claim import LandClaim
+from app.models.claim import Claim
 from app.models.land_transaction import LandTransaction
 from app.models.certificate import Certificate
 from app.models.tax_assessment import TaxAssessment
@@ -31,17 +31,17 @@ class ReportService:
         query_filters = []
         
         if start_date:
-            query_filters.append(LandClaim.created_at >= start_date)
+            query_filters.append(Claim.created_at >= start_date)
         if end_date:
-            query_filters.append(LandClaim.created_at <= end_date)
+            query_filters.append(Claim.created_at <= end_date)
         if status:
-            query_filters.append(LandClaim.status == status)
+            query_filters.append(Claim.status == status)
         
         # Fetch claims
         if query_filters:
-            claims = await LandClaim.find(*query_filters).to_list()
+            claims = await Claim.find(*query_filters).to_list()
         else:
-            claims = await LandClaim.find().to_list()
+            claims = await Claim.find().to_list()
         
         # Format data
         report_data = []
@@ -213,15 +213,15 @@ class ReportService:
             end_date = datetime.utcnow()
         
         # Properties
-        total_properties = await LandClaim.find(
-            LandClaim.created_at >= start_date,
-            LandClaim.created_at <= end_date
+        total_properties = await Claim.find(
+            Claim.created_at >= start_date,
+            Claim.created_at <= end_date
         ).count()
         
-        approved_properties = await LandClaim.find(
-            LandClaim.status == "approved",
-            LandClaim.created_at >= start_date,
-            LandClaim.created_at <= end_date
+        approved_properties = await Claim.find(
+            Claim.status == "approved",
+            Claim.created_at >= start_date,
+            Claim.created_at <= end_date
         ).count()
         
         # Transactions

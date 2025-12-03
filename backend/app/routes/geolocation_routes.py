@@ -5,7 +5,7 @@ import logging
 
 from app.models.user import User
 from app.models.claim import Claim
-from app.routes.auth import get_current_user
+from app.auth.auth import get_current_user
 from app.services.geolocation_service import GeolocationService
 
 router = APIRouter(prefix="/geolocation", tags=["geolocation"])
