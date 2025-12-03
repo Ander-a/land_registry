@@ -18,6 +18,7 @@ from .routes.jurisdiction_routes import router as jurisdiction_router
 from .routes.activity_log_routes import router as activity_log_router
 from .routes.dispute_routes import router as dispute_router
 from .routes.approval_routes import router as approval_router
+from .routes.profile_routes import router as profile_router
 from .services.websocket_service import socket_app
 from .db import init_db, close_db
 from .ai.model_loader import load_models
@@ -60,6 +61,7 @@ app.include_router(jurisdiction_router)  # Jurisdiction management
 app.include_router(activity_log_router)  # Activity logging
 app.include_router(dispute_router)  # Dispute resolution
 app.include_router(approval_router)  # Approval management
+app.include_router(profile_router)  # User profile management
 
 # Mount WebSocket server at /ws
 app.mount("/ws", socket_app)

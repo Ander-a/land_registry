@@ -8,18 +8,36 @@ import {
   FaCheckCircle,
   FaClock,
   FaUserEdit,
-  FaSignOutAlt
+  FaSignOutAlt,
+  FaChartLine,
+  FaUser,
+  FaTimes,
+  FaExclamationCircle
 } from 'react-icons/fa'
 import { useAuth } from '../contexts/AuthContext'
 import claimsService from '../services/claims'
+import ClaimSubmissionWizard from '../components/ClaimSubmissionWizard'
+import ClaimStatusTracker from '../components/ClaimStatusTracker'
+import ResidentProfile from '../components/ResidentProfile'
 import './ResidentDashboard.css'
 
 export default function ResidentDashboard() {
   const { authState, logout } = useAuth()
   const navigate = useNavigate()
   const [properties, setProperties] = useState([])
+  const [allClaims, setAllClaims] = useState([])
   const [recentActivities, setRecentActivities] = useState([])
+  const [stats, setStats] = useState({
+    total_claims: 0,
+    pending_claims: 0,
+    validated_claims: 0,
+    approved_claims: 0,
+    rejected_claims: 0
+  })
   const [loading, setLoading] = useState(true)
+  const [showWizard, setShowWizard] = useState(false)
+  const [showProfile, setShowProfile] = useState(false)
+  const [selectedClaim, setSelectedClaim] = useState(null)
 
   useEffect(() => {
     fetchDashboardData()
@@ -31,18 +49,95 @@ export default function ResidentDashboard() {
       // Fetch user's claims (which will be their properties)
       const response = await claimsService.getAllMyClaims()
       const claims = response.data || []
+      
+      setAllClaims(claims)
 
       // Filter validated claims as properties
-      const validatedClaims = claims.filter(c => c.status === 'validated')
+      const validatedClaims = claims.filter(c => c.status === 'validated' || c.status === 'approved')
       setProperties(validatedClaims)
+
+      // Calculate stats
+      const claimStats = {
+        total_claims: claims.length,
+        pending_claims: claims.filter(c => c.status === 'pending').length,
+        validated_claims: claims.filter(c => c.status === 'validated').length,
+        approved_claims: claims.filter(c => c.status === 'approved').length,
+        rejected_claims: claims.filter(c => c.status === 'rejected').length
+      }
+      setStats(claimStats)
 
       // Generate recent activities from claims
       const activities = generateActivities(claims)
-      setRecentActivities(activities.slice(0, 3))
+      setRecentActivities(activities.slice(0, 5))
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleWizardSubmit = async (formData) => {
+    try {
+      // Create FormData for file uploads
+      const submitData = new FormData()
+      
+      // Add basic fields
+      submitData.append('parcel_number', formData.parcel_number)
+      submitData.append('district', formData.district)
+      submitData.append('sector', formData.sector)
+      submitData.append('cell', formData.cell)
+      submitData.append('village', formData.village)
+      submitData.append('plot_area', formData.plot_area)
+      
+      if (formData.coordinates.lat && formData.coordinates.lng) {
+        submitData.append('latitude', formData.coordinates.lat)
+        submitData.append('longitude', formData.coordinates.lng)
+      }
+      
+      if (formData.supporting_info) {
+        submitData.append('supporting_info', formData.supporting_info)
+      }
+      
+      // Add photos
+      formData.photos.forEach((photo, index) => {
+        submitData.append('photos', photo)
+      })
+      
+      // Add witnesses
+      submitData.append('witnesses', JSON.stringify(formData.witnesses))
+      
+      // Submit claim
+      await claimsService.submitClaim(submitData)
+      
+      // Close wizard and refresh data
+      setShowWizard(false)
+      fetchDashboardData()
+      
+      alert('Claim submitted successfully!')
+    } catch (error) {
+      console.error('Failed to submit claim:', error)
+      alert('Failed to submit claim. Please try again.')
+    }
+  }
+
+  const handleProfileUpdate = async (profileData) => {
+    try {
+      // Call API to update profile
+      const response = await fetch('/api/profile/me', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authState.token}`
+        },
+        body: JSON.stringify(profileData)
+      })
+      
+      if (!response.ok) throw new Error('Failed to update profile')
+      
+      alert('Profile updated successfully!')
+    } catch (error) {
+      console.error('Failed to update profile:', error)
+      alert('Failed to update profile. Please try again.')
     }
   }
 
@@ -117,14 +212,18 @@ export default function ResidentDashboard() {
             <FaHome className="nav-icon" />
             <span>Dashboard</span>
           </Link>
-          <Link to="/submit-claim-new" className="nav-item">
+          <button onClick={() => setShowWizard(true)} className="nav-item nav-btn">
             <FaPlus className="nav-icon" />
             <span>Submit New Claim</span>
-          </Link>
+          </button>
           <Link to="/my-claims" className="nav-item">
             <FaFileAlt className="nav-icon" />
-            <span>My Title Deeds</span>
+            <span>My Claims</span>
           </Link>
+          <button onClick={() => setShowProfile(true)} className="nav-item nav-btn">
+            <FaUser className="nav-icon" />
+            <span>My Profile</span>
+          </button>
           <Link to="/notifications" className="nav-item">
             <FaBell className="nav-icon" />
             <span>Notifications</span>
@@ -161,52 +260,118 @@ export default function ResidentDashboard() {
           {/* Welcome Section */}
           <section className="welcome-section">
             <h2 className="welcome-title">Welcome back, {getUserFirstName()}!</h2>
-            <p className="welcome-subtitle">Here's a summary of your account and recent activities.</p>
+            <p className="welcome-subtitle">Here's a summary of your claims and recent activities.</p>
+          </section>
+
+          {/* Statistics Cards */}
+          <section className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-icon total">
+                <FaChartLine />
+              </div>
+              <div className="stat-content">
+                <p className="stat-label">Total Claims</p>
+                <p className="stat-value">{stats.total_claims}</p>
+              </div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-icon pending">
+                <FaClock />
+              </div>
+              <div className="stat-content">
+                <p className="stat-label">Pending</p>
+                <p className="stat-value">{stats.pending_claims}</p>
+              </div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-icon validated">
+                <FaCheckCircle />
+              </div>
+              <div className="stat-content">
+                <p className="stat-label">Validated</p>
+                <p className="stat-value">{stats.validated_claims}</p>
+              </div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-icon approved">
+                <FaCheckCircle />
+              </div>
+              <div className="stat-content">
+                <p className="stat-label">Approved</p>
+                <p className="stat-value">{stats.approved_claims}</p>
+              </div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-icon rejected">
+                <FaExclamationCircle />
+              </div>
+              <div className="stat-content">
+                <p className="stat-label">Rejected</p>
+                <p className="stat-value">{stats.rejected_claims}</p>
+              </div>
+            </div>
           </section>
 
           {/* Quick Actions */}
           <section className="quick-actions-section">
             <h3 className="section-title">Quick Actions</h3>
             <div className="quick-actions-grid">
-              <Link to="/submit-claim-new" className="action-btn primary">
+              <button onClick={() => setShowWizard(true)} className="action-btn primary">
                 <FaPlus className="btn-icon" />
                 Submit a New Claim
-              </Link>
+              </button>
               <Link to="/my-claims" className="action-btn secondary">
                 <FaFileAlt className="btn-icon" />
-                View My Title Deeds
+                View All My Claims
               </Link>
+              <button onClick={() => setShowProfile(true)} className="action-btn tertiary">
+                <FaUser className="btn-icon" />
+                Edit My Profile
+              </button>
             </div>
           </section>
 
           {/* Main Grid */}
           <div className="content-grid">
-            {/* My Properties */}
-            <section className="card properties-card">
-              <h3 className="card-title">My Properties</h3>
-              <div className="properties-list">
+            {/* Recent Claims with Status Tracker */}
+            <section className="card recent-claims-card">
+              <h3 className="card-title">Recent Claims</h3>
+              <div className="claims-list">
                 {loading ? (
-                  <div className="loading-state">Loading properties...</div>
-                ) : properties.length > 0 ? (
-                  properties.slice(0, 2).map((property, index) => (
-                    <div key={property.id || index} className="property-item">
-                      <div className="property-info">
-                        <h4 className="property-address">
-                          {property.location || `Property ${index + 1}`}
+                  <div className="loading-state">Loading claims...</div>
+                ) : allClaims.length > 0 ? (
+                  allClaims.slice(0, 3).map((claim, index) => (
+                    <div key={claim.id || index} className="claim-summary-item">
+                      <div className="claim-summary-header">
+                        <h4 className="claim-parcel">
+                          {claim.parcel_number || `Claim ${index + 1}`}
                         </h4>
-                        <p className="property-title">
-                          Title #{property.id?.substring(0, 12) || 'N/A'}
-                        </p>
+                        <span className={`claim-status-badge status-${claim.status}`}>
+                          {claim.status}
+                        </span>
                       </div>
-                      <span className="property-status verified">Verified</span>
+                      <p className="claim-location">
+                        {claim.village}, {claim.cell}, {claim.sector}
+                      </p>
+                      <p className="claim-area">{claim.plot_area} m²</p>
+                      <button 
+                        className="view-status-btn"
+                        onClick={() => setSelectedClaim(claim)}
+                      >
+                        View Progress
+                      </button>
                     </div>
                   ))
                 ) : (
                   <div className="empty-state">
-                    <p>No verified properties yet</p>
-                    <Link to="/submit-claim-new" className="text-link">
+                    <p>No claims yet</p>
+                    <button onClick={() => setShowWizard(true)} className="text-link">
                       Submit your first claim →
-                    </Link>
+                    </button>
                   </div>
                 )}
               </div>
@@ -240,6 +405,39 @@ export default function ResidentDashboard() {
           </div>
         </div>
       </main>
+
+      {/* Modals */}
+      {showWizard && (
+        <ClaimSubmissionWizard
+          onClose={() => setShowWizard(false)}
+          onSubmit={handleWizardSubmit}
+        />
+      )}
+
+      {showProfile && (
+        <div className="modal-overlay" onClick={() => setShowProfile(false)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowProfile(false)}>
+              <FaTimes />
+            </button>
+            <ResidentProfile
+              user={authState?.user}
+              onUpdate={handleProfileUpdate}
+            />
+          </div>
+        </div>
+      )}
+
+      {selectedClaim && (
+        <div className="modal-overlay" onClick={() => setSelectedClaim(null)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setSelectedClaim(null)}>
+              <FaTimes />
+            </button>
+            <ClaimStatusTracker claim={selectedClaim} />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
