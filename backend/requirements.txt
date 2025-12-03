@@ -13,3 +13,5 @@ python-magic
 opencv-python
 numpy
 scikit-image
+python-socketio
+aiohttp

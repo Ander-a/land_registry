@@ -9,6 +9,7 @@ from ..utils.storage import save_upload_file, get_file_path
 from ..utils.geotag import extract_geolocation
 from ..utils.geo_calc import calculate_boundary_area
 from ..auth.auth import JWTBearer
+from ..services.activity_log_service import ActivityLogService
 
 router = APIRouter(prefix="/claims", tags=["claims"])
 
@@ -67,10 +68,20 @@ async def create_claim(
         geolocation=geolocation,
         boundary=boundary_obj.model_dump(),
         plot_area=plot_area,
-        status="pending"
+        status="pending",
+        jurisdiction_id=current_user.jurisdiction_id,
+        jurisdiction_name=current_user.jurisdiction_name
     )
     
     await claim.insert()
+    
+    # Log claim submission activity
+    if claim.jurisdiction_id:
+        try:
+            await ActivityLogService.log_claim_submission(str(claim.id))
+        except Exception as log_error:
+            # Don't fail claim creation if logging fails
+            pass
     
     # Return response
     return ClaimRead(
