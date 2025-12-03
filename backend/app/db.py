@@ -12,6 +12,10 @@ from .models.jurisdiction import Jurisdiction
 from .models.activity_log import ActivityLog
 from .models.dispute import Dispute
 from .models.approval_action import ApprovalAction
+from .models.land_transaction import LandTransaction
+from .models.property_valuation import PropertyValuation
+from .models.tax_assessment import TaxAssessment
+from .models.land_use_permit import LandUsePermit
 
 client = None
 database = None
@@ -37,7 +41,11 @@ async def init_db():
             Jurisdiction,
             ActivityLog,
             Dispute,
-            ApprovalAction
+            ApprovalAction,
+            LandTransaction,
+            PropertyValuation,
+            TaxAssessment,
+            LandUsePermit
         ]
     )
 

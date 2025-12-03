@@ -23,6 +23,7 @@ import DisputeResolution from './components/DisputeResolution'
 import ClaimDetail from './pages/ClaimDetail'
 import ClaimDetailsNew from './pages/ClaimDetailsNew'
 import ValidateClaim from './pages/ValidateClaim'
+import PropertyManagement from './pages/PropertyManagement'
 import FileUpload from './components/FileUpload'
 import ProtectedRoute from './components/ProtectedRoute'
 import { useAuth } from './contexts/AuthContext'
@@ -49,6 +50,16 @@ export default function App() {
       <Route path="/community/validate/:claimId" element={<ProtectedRoute><ClaimValidation /></ProtectedRoute>} />
       <Route path="/community/score" element={<ProtectedRoute><ValidatorScore /></ProtectedRoute>} />
       <Route path="/leader" element={<ProtectedRoute><LeaderEndorsement /></ProtectedRoute>} />
+      
+      {/* Property Management Route */}
+      <Route 
+        path="/property-management" 
+        element={
+          <ProtectedRoute>
+            <PropertyManagement />
+          </ProtectedRoute>
+        } 
+      />
       
       {/* Leader Portal Routes */}
       <Route 

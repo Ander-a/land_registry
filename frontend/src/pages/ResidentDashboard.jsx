@@ -12,7 +12,8 @@ import {
   FaChartLine,
   FaUser,
   FaTimes,
-  FaExclamationCircle
+  FaExclamationCircle,
+  FaBuilding
 } from 'react-icons/fa'
 import { useAuth } from '../contexts/AuthContext'
 import claimsService from '../services/claims'
@@ -219,6 +220,10 @@ export default function ResidentDashboard() {
           <Link to="/my-claims" className="nav-item">
             <FaFileAlt className="nav-icon" />
             <span>My Claims</span>
+          </Link>
+          <Link to="/property-management" className="nav-item">
+            <FaBuilding className="nav-icon" />
+            <span>Property Management</span>
           </Link>
           <button onClick={() => setShowProfile(true)} className="nav-item nav-btn">
             <FaUser className="nav-icon" />

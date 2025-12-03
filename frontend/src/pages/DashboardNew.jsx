@@ -8,7 +8,8 @@ import {
   FaPlus,
   FaList,
   FaMap,
-  FaChartBar
+  FaChartBar,
+  FaBuilding
 } from 'react-icons/fa'
 import { useAuth } from '../contexts/AuthContext'
 import claimsService from '../services/claims'
@@ -115,9 +116,9 @@ export default function DashboardNew() {
       primary: false
     },
     {
-      label: 'Access Map',
-      icon: <FaMap />,
-      link: '/map',
+      label: 'Property Management',
+      icon: <FaBuilding />,
+      link: '/property-management',
       primary: false
     },
     {
